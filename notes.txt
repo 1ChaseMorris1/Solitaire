@@ -1,0 +1,8 @@
+7 stacks 
+each stack is created on start and the 28 cards are chosen, those cards are then 
+removed from the deck of 52 cards. 
+the stacks are moved and each card is transformed 20 pixels down from the original 
+the cards texture depends on the start the last card in the list will have the normal texture 
+and the rest will have the back of the card
+cards must go in black red black red 
+the number must be lower than the number on the bottom card 
