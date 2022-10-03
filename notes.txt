@@ -6,3 +6,62 @@ the cards texture depends on the start the last card in the list will have the n
 and the rest will have the back of the card
 cards must go in black red black red 
 the number must be lower than the number on the bottom card 
+
+129.65
+        print(" \n\n\n     ");
+
+        for(int i = 0; i < deck.Count; i++)
+        {
+            print(deck[i].GetComponent<Card>().getStack());
+        }
+1515.5
+1280.8
+
+38
+
+
+Y 269
+
+-569.3
+-380
+-190.7
+-1.34
+187.9
+377.2
+566.5
+
+7 stacks 
+stacks can have upside down cards and right side up cards 
+if the last card in the stack list is an upside down card then it becomes a right side up card
+cards are added initially and then they are added using the CARD class get cards function 
+
+**********************************************************************************************
+CARD: 
+
+getCards(): 
+	this function will recurse through the card and all of its next cards and return 
+them in a list. This list will be appened to the stacks before checking if the last card is 
+turned over. 
+
+moveCards(): 
+	this function will recurse through the card and whatever card is "ontop" of it 
+in the stack allowing it to move all of the cards. 
+
+removeCards(): 
+	this function will go back to the card behind the current card and then while the next card 
+does not equal NULL it will set it equal to NULL, is used when a stack of cards is removed off of a card. 
+This function will call when the move is valid returns number of cards removed
+
+validMove(): 
+	check if the card is in the stack, if it is then play the removeCards() function and then pop that 
+many cards off the stack of cards in the stack script, then check if the last card is face over. 
+if the card is not in the stack then add it to the stack, set it equal to the previous cards next card or the card it 
+was set ontop of 
+
+**************************************************************************************
+Stack: 
+
+if the stack is empty, then the card being placed must be a KING and it will be set to the 
+stacks position 
+****************************************************************************************
+move is valid if the color is not the same and it is one class lower than the top card. 
