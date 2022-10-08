@@ -8,17 +8,19 @@ using UnityEngine.UI;
 
 public class Card : MonoBehaviour, IPointerClickHandler, IDragHandler, IDropHandler, IBeginDragHandler, IPointerUpHandler
 {
-    private Engine engine;                // game engine
+    public Engine engine;                 // game engine
     private int type;                     // spades, diamonds etc 
     private char color;                   // black or red 
     public int Class;                     // ace, two, king etc 
     private Sprite back;                  // is used incase card is turned over
     private Sprite card;                  // the front sprite of the card
     private bool flipped;                 // is card facing front
-    public bool inStack;                  // if the card is in the stack then this will be true.
+    public bool inStack;                  // if the card is in the board decks then this will be true.
     public bool last_card;                // if the card is the last in the stack then a card can be placed onto it
-    private Vector2 previousPosition;     // the previous position of the card. 
+    public Vector2 previousPosition;      // the previous position of the card. 
     public int stack;                     // what stack this card is in. 
+    public int position;                  // the position in the stack the card is in.
+    public bool moveMany;                 // if you are moving more than one card this variable is true.
 
     // ** MAYBE ** 
     private Card nextCard;                // the next card in the line.
@@ -35,6 +37,7 @@ public class Card : MonoBehaviour, IPointerClickHandler, IDragHandler, IDropHand
         this.card = card;
         flipped = false;
         inStack = false;
+        moveMany = false;
 
         if (type > 2)
             color = 'B';
@@ -95,13 +98,23 @@ public class Card : MonoBehaviour, IPointerClickHandler, IDragHandler, IDropHand
 
     public void OnDrag(PointerEventData eventData)
     {
+        // check to see if the gameobjects position is outside the bounds of the playing area 
+        // if it is then on drop just go back to original position, do this in
+        // the ''pointer up ' function. else the drop
+        // script on the background will check if the card is in an arbitrary position on the 
+        // background else the statements given will work. 
         if (flipped)
         {
 
             gameObject.GetComponent<RectTransform>().anchoredPosition +=
                 eventData.delta / engine.canvas.GetComponent<Canvas>().scaleFactor;
 
-            transform.SetSiblingIndex(60);
+            if (inStack && !(engine.stack[stack].getSize() == position + 1))
+            {
+                moveMany = true;
+                engine.stack[stack].moveCards(position + 1, gameObject, transform.GetSiblingIndex());
+                
+            }
         }
 
     }
@@ -113,24 +126,40 @@ public class Card : MonoBehaviour, IPointerClickHandler, IDragHandler, IDropHand
         if (last_card)
         {
             eventData.pointerDrag.GetComponent<CanvasGroup>().blocksRaycasts = true;
-
-            var x = GetComponent<RectTransform>().anchoredPosition.x;
-            var y = GetComponent<RectTransform>().anchoredPosition.y;
-
-            eventData.pointerDrag.GetComponent<RectTransform>().anchoredPosition = new Vector2(x, y - 50);
-
+            eventData.pointerDrag.GetComponent<RectTransform>().anchoredPosition = GetComponent<RectTransform>().anchoredPosition;
+            eventData.pointerDrag.GetComponent<RectTransform>().anchoredPosition -= new Vector2(0, 50);
+            engine.stack[stack].addCard(eventData.pointerDrag.GetComponent<Card>());
         }
         else
         {
-            eventData.pointerDrag.GetComponent<Card>().revertPosition();
+            if (inStack)
+            {
+                var x = eventData.pointerDrag.GetComponent<Card>().stack;
+                var y = eventData.pointerDrag.GetComponent<Card>().position;
+                engine.stack[x].moveCardsBack(y);
+            } else
+            {
+                eventData.pointerDrag.GetComponent<Card>().revertPosition();
+            }
         }
+
+        moveMany = false;
 
     }
 
     public void OnBeginDrag(PointerEventData eventData)
     {
-        previousPosition = GetComponent<RectTransform>().anchoredPosition;
+        if(inStack)
+        {
+            engine.stack[stack].setPreviousPositions(position);
+
+        } else
+        {
+            previousPosition = GetComponent<RectTransform>().anchoredPosition; 
+        }
+
         GetComponent<CanvasGroup>().blocksRaycasts = false;
+        transform.SetSiblingIndex(60);
     }
 
 
@@ -146,18 +175,43 @@ public class Card : MonoBehaviour, IPointerClickHandler, IDragHandler, IDropHand
             gameObject.GetComponent<RectTransform>().anchoredPosition = new Vector2(-849f, y);
             flipCardFront();
             transform.SetSiblingIndex(60);
-            engine.move_deck();
         }
         
     }
 
+    // if the card is in the decks then it will do the movebackcards function 
+    // else it will just revert to the single position because you can 
+    // only pull one card out of the deck at a time. 
     public void OnPointerUp(PointerEventData eventData)
     {
-        if (eventData.pointerClick.GetComponent<Card>().flipped)
+        var x = eventData.pointerDrag.GetComponent<RectTransform>().anchoredPosition.x;
+        var y = eventData.pointerDrag.GetComponent<RectTransform>().anchoredPosition.y;
+
+
+        if (x < -890 || x > 665)
         {
-            eventData.pointerDrag.GetComponent<Card>().revertPosition();
-            eventData.pointerDrag.GetComponent<CanvasGroup>().blocksRaycasts = true;
+            gameObject.GetComponent<Card>().revertPosition();
+            if (inStack)
+                moveBackCards();
+            else
+                revertPosition();
         }
 
+        if (y > 280 || y < -435)
+        {
+            gameObject.GetComponent<Card>().revertPosition();
+            if (inStack)
+                moveBackCards();
+            else
+                revertPosition();
+        }
+
+        eventData.pointerDrag.GetComponent<CanvasGroup>().blocksRaycasts = true;
     }
+
+    public void moveBackCards()
+    {
+        engine.stack[stack].moveCardsBack(position);
+    }
+
 }

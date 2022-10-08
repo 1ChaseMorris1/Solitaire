@@ -14,12 +14,11 @@ public class Engine : MonoBehaviour
 
     [SerializeField] private Sprite back_card;                      // back of card sprite.
     public List<Card> deck = new List<Card>();                      // deck of cards, only one in game.
-    private Stack[] stack;                                          // the empty decks on the board
+    public Stack[] stack;                                          // the empty decks on the board
     private int que_deck = 52;                                      // number of cards in que.
     private int deck_iterator = 0;                                  // counts stuff
     [SerializeField] private List<Sprite> card_fronts;              // front sprite for cards
     public GameObject canvas;                                       // the games canvas 
-
 
     private void Start()
     {
@@ -82,25 +81,23 @@ public class Engine : MonoBehaviour
         // I is the deck I am acessing
         for (int i = 0; i < 7; i++)
         {
-
             // k is the number of cards
             for(int j = 0; j < k; j++)
             {
 
                 deck[l].GetComponent<RectTransform>().anchoredPosition = stack[i].GetComponent<RectTransform>().anchoredPosition;
 
-                
-
                 deck[l].inStack = true;
 
-                deck[l].stack = j;
+                deck[l].stack = i;
+
+                deck[l].position = j;
+
+                stack[i].addCard(deck[l]);
 
                 if(j > 0)
                 {
-                    var y = deck[l].GetComponent<RectTransform>().anchoredPosition.y;
-                    var x = deck[l].GetComponent<RectTransform>().anchoredPosition.x;
-
-                    deck[l].GetComponent<RectTransform>().anchoredPosition = new Vector2(x, y - down);
+                    deck[l].GetComponent<RectTransform>().anchoredPosition -= new Vector2(0, down);
 
                     down = down + 50;
                 }
@@ -141,5 +138,5 @@ public class Engine : MonoBehaviour
             deck_iterator = 0;
         }
     }
-
+    
 }
