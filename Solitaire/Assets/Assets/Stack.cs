@@ -7,23 +7,50 @@ using UnityEngine.EventSystems;
 public class Stack : MonoBehaviour, IDropHandler
 {
     // add a remove card function to remove the cards from piles they have been moved from. 
-    private List<Card> deck = new List<Card>();
-    private Engine engine;
+    public List<Card> deck = new List<Card>();
+    public int stackSize;
+    //private Engine engine;
 
     private void Awake()
     {
-    //    engine = GameObject.FindGameObjectWithTag("game").GetComponent<Engine>();
+     //   engine = GameObject.FindGameObjectWithTag("game").GetComponent<Engine>();
     }
 
-    public void addCard(Card card)
+    public void addCard(Card card, int stack)
     {
-        // change the position of the card
-        if(deck.Count > 0)
-            deck[deck.Count - 1].GetComponent<Card>().last_card = false; 
-        
+        card.inStack = true;
+
+        card.stack = stack;
+
+        card.last_card = true;
+
+        card.GetComponent<RectTransform>().anchoredPosition = GetComponent<RectTransform>().anchoredPosition;
+
+        card.GetComponent<RectTransform>().anchoredPosition -= new Vector2(0, deck.Count * 50);
+
         deck.Add(card);
 
-        deck[deck.Count - 1].GetComponent<Card>().last_card = true;
+        for (int i = 0; i < deck.Count; i++)
+        {
+            deck[i].GetComponent<Card>().position = i;
+            if(i != deck.Count - 1)
+                deck[i].GetComponent<Card>().last_card = false;
+        }
+
+    }
+
+    // removes cards from the list 
+    public void removeCard(int x)
+    {
+        deck.RemoveAt(x);
+
+        for (int i = 0; i < deck.Count; i++)
+        {
+            deck[i].position = i;
+            deck[i].last_card = false;
+        }
+
+        deck[deck.Count - 1].last_card = true;
     }
 
     public int getSize()
@@ -55,18 +82,24 @@ public class Stack : MonoBehaviour, IDropHandler
         }
     }
 
+    // sets the previous positions of all cards 
     public void setPreviousPositions(int x)
     {
         for(int i = x; i < deck.Count; i++)
         {
             deck[i].GetComponent<Card>().previousPosition =
                 deck[i].GetComponent<RectTransform>().anchoredPosition;
+            stackSize++;
         }
     }
 
+    
+
+
+    // movement functions:
     public void OnDrop(PointerEventData eventData)
     {
-        eventData.pointerDrag.GetComponent<RectTransform>().anchoredPosition = GetComponent<RectTransform>().anchoredPosition;
+        eventData.pointerDrag.GetComponent<Card>().revertPosition();
         eventData.pointerDrag.GetComponent<CanvasGroup>().blocksRaycasts = true;
 
     }

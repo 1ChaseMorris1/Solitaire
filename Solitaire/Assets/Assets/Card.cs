@@ -20,7 +20,6 @@ public class Card : MonoBehaviour, IPointerClickHandler, IDragHandler, IDropHand
     public Vector2 previousPosition;      // the previous position of the card. 
     public int stack;                     // what stack this card is in. 
     public int position;                  // the position in the stack the card is in.
-    public bool moveMany;                 // if you are moving more than one card this variable is true.
 
     // ** MAYBE ** 
     private Card nextCard;                // the next card in the line.
@@ -37,7 +36,6 @@ public class Card : MonoBehaviour, IPointerClickHandler, IDragHandler, IDropHand
         this.card = card;
         flipped = false;
         inStack = false;
-        moveMany = false;
 
         if (type > 2)
             color = 'B';
@@ -108,10 +106,9 @@ public class Card : MonoBehaviour, IPointerClickHandler, IDragHandler, IDropHand
 
             gameObject.GetComponent<RectTransform>().anchoredPosition +=
                 eventData.delta / engine.canvas.GetComponent<Canvas>().scaleFactor;
-
-            if (inStack && !(engine.stack[stack].getSize() == position + 1))
+            // && !(engine.stack[stack].getSize() == position + 1)
+            if (inStack)
             {
-                moveMany = true;
                 engine.stack[stack].moveCards(position + 1, gameObject, transform.GetSiblingIndex());
                 
             }
@@ -126,13 +123,22 @@ public class Card : MonoBehaviour, IPointerClickHandler, IDragHandler, IDropHand
         if (last_card)
         {
             eventData.pointerDrag.GetComponent<CanvasGroup>().blocksRaycasts = true;
-            eventData.pointerDrag.GetComponent<RectTransform>().anchoredPosition = GetComponent<RectTransform>().anchoredPosition;
-            eventData.pointerDrag.GetComponent<RectTransform>().anchoredPosition -= new Vector2(0, 50);
-            engine.stack[stack].addCard(eventData.pointerDrag.GetComponent<Card>());
+
+            if (eventData.pointerDrag.GetComponent<Card>().inStack)
+            {
+                print("in stack");
+                engine.swapDeck(stack, eventData.pointerDrag.GetComponent<Card>().stack,
+                    eventData.pointerDrag.GetComponent<Card>().position);
+            } else
+            {
+                print("Not in stack");
+                engine.stack[stack].addCard(eventData.pointerDrag.GetComponent<Card>(), stack);
+            }
+
         }
         else
         {
-            if (inStack)
+            if (eventData.pointerDrag.GetComponent<Card>().inStack)
             {
                 var x = eventData.pointerDrag.GetComponent<Card>().stack;
                 var y = eventData.pointerDrag.GetComponent<Card>().position;
@@ -142,8 +148,6 @@ public class Card : MonoBehaviour, IPointerClickHandler, IDragHandler, IDropHand
                 eventData.pointerDrag.GetComponent<Card>().revertPosition();
             }
         }
-
-        moveMany = false;
 
     }
 

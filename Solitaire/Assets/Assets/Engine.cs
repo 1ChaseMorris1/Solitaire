@@ -72,53 +72,27 @@ public class Engine : MonoBehaviour
     // sets all the decks up 
     private void setDecks()
     {
-
         int k = 1;
         int l = 0;
-        int down = 50;
 
         // 7 is the number of decks.
         // I is the deck I am acessing
         for (int i = 0; i < 7; i++)
         {
             // k is the number of cards
-            for(int j = 0; j < k; j++)
+            for (int j = 0; j < k; j++)
             {
 
-                deck[l].GetComponent<RectTransform>().anchoredPosition = stack[i].GetComponent<RectTransform>().anchoredPosition;
-
-                deck[l].inStack = true;
-
-                deck[l].stack = i;
-
-                deck[l].position = j;
-
-                stack[i].addCard(deck[l]);
-
-                if(j > 0)
-                {
-                    deck[l].GetComponent<RectTransform>().anchoredPosition -= new Vector2(0, down);
-
-                    down = down + 50;
-                }
+                stack[i].addCard(deck[l], i);
 
                 if (j == k - 1)
-                {
-                    deck[l].flipCardFront();
-                    deck[l].last_card = true;
-
-                }
+                   deck[l].flipCardFront();
 
                 l++;
             }
-
-            down = 50;
             k++;
-
         }
-
         que_deck -= l;
-
     }
 
     public void move_deck()
@@ -136,6 +110,18 @@ public class Engine : MonoBehaviour
                 }
             }
             deck_iterator = 0;
+        }
+    }
+
+    // deck2 is the deck that the player is moving around, cards are removed from here
+    // deck1 is the deck that the player is adding the cards to 
+    // pos is the slice from deck1 
+    public void swapDeck(int deck1, int deck2, int pos)
+    {
+        for(int i = pos; i < stack[deck2].deck.Count; i++)
+        {
+            stack[deck1].addCard(stack[deck2].deck[i], deck1);
+           // stack[deck2].removeCard(i); // <-- problem with function.
         }
     }
     
